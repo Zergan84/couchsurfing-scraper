@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couchsurfing Pro: Scraper, Requests & Auto-Sender</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151d30;
+      --card-border: #22304d;
+      --accent-orange: #f97316;
+      --accent-orange-hover: #ea580c;
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-pink: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --border-radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 20px 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Навигационные вкладки */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: #111827;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+
+    .nav-tab {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-main);
+    }
+
+    .nav-tab.active {
+      background: #1e293b;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+    }
+
+    .tab-badge {
+      background: #334155;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .nav-tab.active .tab-badge {
+      background: var(--accent-orange);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      background: #0b0f19;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      padding: 9px 12px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-orange);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-main);
+      margin-top: 6px;
+    }
+
+    .checkbox-group input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .btn-primary {
+      background: var(--accent-orange);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-orange-hover);
+    }
+
+    .btn-purple {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    .btn-purple:hover {
+      background: #9333ea;
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: #27354f;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn-sm:hover {
+      background: #27354f;
+      border-color: #38bdf8;
+    }
+
+    .btn-sm.active {
+      background: var(--accent-orange);
+      border-color: var(--accent-orange);
+      color: #fff;
+    }
+
+    /* Бейджи */
+    .badge-gender {
+      background: #1e293b;
+      color: #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-gender.female {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    .badge-gender.couple {
+      background: rgba(234, 179, 8, 0.2);
+      color: #fde047;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+
+    .badge-insta {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+      color: #f472b6;
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 11px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.15s;
+    }
+    .badge-insta:hover {
+      transform: scale(1.05);
+      border-color: #f472b6;
+    }
+
+    .badge-sleeping {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-secret {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    /* Таблица базы хостов */
+    .table-container {
+      overflow-x: auto;
+      max-height: 540px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: #0b0f19;
+      color: var(--text-muted);
+      padding: 10px 12px;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--card-border);
+      z-index: 1;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1a233a;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #1a233a;
+    }
+
+    .profile-link {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .profile-link:hover {
+      text-decoration: underline;
+    }
+
+    .logs-console {
+      background: #070a12;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Вкладка 2 стили */
+    .generator-header {
+      background: linear-gradient(180deg, #182238 0%, #131b2e 100%);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 18px 22px;
+      margin-bottom: 16px;
+    }
+
+    .generator-grid {
+      display: grid;
+      grid-template-columns: 160px 160px 120px 1fr auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    @media (max-width: 1200px) {
+      .generator-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 14px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: #0b0f19;
+      border: 1px solid var(--card-border);
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .stat-chip.approved { border-color: rgba(16, 185, 129, 0.4); color: #34d399; }
+    .stat-chip.draft { border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; }
+    .stat-chip.skipped { border-color: rgba(148, 163, 184, 0.3); color: #94a3b8; }
+    .stat-chip.sent { border-color: rgba(168, 85, 247, 0.5); color: #c084fc; background: rgba(168, 85, 247, 0.1); }
+
+    .filter-tabs-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .host-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .host-card.status-approved {
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.08);
+    }
+
+    .host-card.status-sent {
+      border-color: rgba(168, 85, 247, 0.7);
+      background: #171738;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+    }
+
+    .host-card.status-skipped {
+      opacity: 0.55;
+      border-color: #1e293b;
+    }
+
+    .host-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .host-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .host-name {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .host-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Плашка Instagram */
+    .insta-alert {
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.15) 0%, rgba(236, 72, 153, 0.18) 100%);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      color: #f472b6;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .insta-alert a {
+      color: #fff;
+      background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .message-textarea {
+      width: 100%;
+      height: 160px;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #f1f5f9;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.55;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .message-textarea:focus {
+      border-color: var(--accent-orange);
+    }
+
+    .host-card-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action-group-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .action-group-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: #0b0f19;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .status-btn:hover { color: #fff; }
+    .status-btn.active-draft { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; color: #38bdf8; }
+    .status-btn.active-approved { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399; }
+    .status-btn.active-skipped { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #f87171; }
+    .status-btn.active-sent { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; color: #c084fc; }
+
+    .btn-copy {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid var(--card-border);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-copy:hover { background: #27354f; border-color: var(--accent-blue); }
+
+    .btn-stay-request {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-stay-request:hover {
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    }
+
+    /* Стили панели автопилота */
+    .autopilot-box {
+      background: linear-gradient(180deg, #1b2640 0%, #111a2f 100%);
+      border: 1px solid #f97316;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(249, 115, 22, 0.12);
+    }
+
+    .progress-bar-bg {
+      background: #0b0f19;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 8px;
+      border: 1px solid var(--card-border);
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #38bdf8 0%, #10b981 100%);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .countdown-glow {
+      background: #0b0f19;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-area">
+        <div class="logo-icon">CS</div>
+        <div>
+          <h1>Couchsurfing Pro</h1>
+          <div class="subtitle">Сбор анкет, фильтрация, прямые ссылки /stay-request и автопилот отправки (Шаг 3)</div>
+        </div>
+      </div>
+
+      <!-- Вкладки навигации -->
+      <div class="nav-tabs">
+        <button id="tabBtn1" class="nav-tab active" onclick="switchMainTab(1)">
+          <span>📋 Вкладка 1: Поиск и База хостов</span>
+          <span id="tabCount1" class="tab-badge">94</span>
+        </button>
+        <button id="tabBtn2" class="nav-tab" onclick="switchMainTab(2)">
+          <span>✨ Вкладка 2: Запросы и Автопилот (Шаг 2 & 3)</span>
+          <span id="tabCount2" class="tab-badge">94</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ================================================================= -->
+    <!-- ВКЛАДКА 1: Поиск и База хостов                                     -->
+    <!-- ================================================================= -->
+    <div id="tab1Content" class="tab-content active">
+      <div style="display: grid; grid-template-columns: 340px 1fr; gap: 20px;">
+        <!-- Панель сбора и фильтрации -->
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+          <!-- Карточка сбора -->
+          <div class="card">
+            <div class="card-title">Параметры сбора хостов</div>
+            <div class="form-group">
+              <label>Город (City)</label>
+              <input type="text" id="city" value="Tokyo">
+            </div>
+
+            <div class="form-group">
+              <label>Фильтр пола при сборе</label>
+              <select id="gender">
+                <option value="Any" selected>Любой (Any - без ограничений)</option>
+                <option value="Female">Female (Женский)</option>
+                <option value="Male">Male (Мужской)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Глубина скролла (шагов)</label>
+              <input type="number" id="pages" value="10" min="1" max="50">
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-group">
+                <input type="checkbox" id="headless">
+                <span>Headless режим (без окна браузера)</span>
+              </label>
+            </div>
+
+            <button type="button" id="startBtn" class="btn btn-primary" onclick="startScraping()">
+              🚀 Запустить сбор
+            </button>
+            <button type="button" id="stopBtn" class="btn btn-danger" onclick="stopProcess()" style="display:none;">
+              ⏹ Остановить процесс
+            </button>
+          </div>
+
+          <!-- Карточка фильтрации -->
+          <div class="card" style="border-left: 3px solid var(--accent-purple);">
+            <div class="card-title" style="color: #c084fc;">
+              <span>🧹 Глубокая фильтрация</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+              Отсеивает неактивных по стоп-словам (not in japan, cannot host, airbnb), определяет состав (Male/Female/Couple) и извлекает Instagram.
+            </p>
+
+            <div class="form-group">
+              <label>Целевой пол</label>
+              <select id="filterGender">
+                <option value="any" selected>Любой (Очистить всех)</option>
+                <option value="female">Только Female</option>
+                <option value="male">Только Male</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-group">
+                <input type="checkbox" id="allowCouples" checked>
+                <span>Разрешать пары (Couples)</span>
+              </label>
+            </div>
+
+            <button type="button" class="btn btn-purple" onclick="startFiltering()">
+              ✨ Отфильтровать датасет
+            </button>
+          </div>
+
+          <!-- Авторизация -->
+          <div class="card">
+            <div class="card-title">Сессия и куки</div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="startAuthConsole()" style="margin-top: 0; flex: 1;">
+                🖥️ Окно входа
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="toggleCookieBox()" style="margin-top: 0; flex: 1;">
+                📋 Вставить Cookie
+              </button>
+            </div>
+
+            <div id="cookieBox" style="display: none; background: #0b0f19; padding: 12px; border-radius: 8px; border: 1px solid var(--card-border); margin-top: 12px;">
+              <label style="font-size: 11px;">Cookie couchsurfing_session или document.cookie:</label>
+              <textarea id="rawCookieInput" rows="3" style="font-family:monospace; font-size:11px;" placeholder="couchsurfing_session=..."></textarea>
+              <button type="button" class="btn btn-primary" onclick="saveDirectCookie()" style="margin-top: 8px; padding: 6px; font-size: 12px;">
+                💾 Применить Cookie
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Консоль логов и Таблица базы хостов -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="card">
+            <div class="card-title">
+              <span>Логи в реальном времени</span>
+              <button class="btn-sm" onclick="document.getElementById('logsConsole').innerText=''">Очистить</button>
+            </div>
+            <div id="logsConsole" class="logs-console">Ожидание команд...</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="viewCuratedBtn" class="btn-sm active" onclick="switchTableView(true)">
+                  ✨ Очищенные (<span id="curatedCount">0</span>)
+                </button>
+                <button id="viewRawBtn" class="btn-sm" onclick="switchTableView(false)">
+                  📋 Все сырые (<span id="rawCount">0</span>)
+                </button>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <a id="downloadCsv" href="/api/download/csv?curated=true" target="_blank" class="btn-sm">💾 CSV</a>
+                <a id="downloadJson" href="/api/download/json?curated=true" target="_blank" class="btn-sm">💾 JSON</a>
+                <button class="btn-sm" onclick="fetchTableResults()">🔄</button>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Имя / Профиль</th>
+                    <th>Район (Локация)</th>
+                    <th>Спальное место</th>
+                    <th>Рейтинг / Отклик</th>
+                    <th>Запрос (/stay-request)</th>
+                    <th>Instagram</th>
+                  </tr>
+                </thead>
+                <tbody id="hostsTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">Загрузка данных базы...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- ВКЛАДКА 2: Генератор запросов и Автопилот (Шаг 2 & Шаг 3)          -->
+    <!-- ================================================================= -->
+    <div id="tab2Content" class="tab-content">
+      <!-- Переключатель режима: Ручной / Автопилот -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #111827; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--card-border); flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <span style="font-size: 13px; font-weight: 700; color: var(--text-muted);">Режим работы:</span>
+          <button id="modeManualBtn" class="btn-sm active" onclick="switchAutopilotMode(false)">🔘 Ручная отправка</button>
+          <button id="modeAutoBtn" class="btn-sm" onclick="switchAutopilotMode(true)">🚀 Фоновый автопилот (Шаг 3)</button>
+        </div>
+        <div id="autopilotBadge" class="stat-chip" style="font-size: 12px; border-color: #334155;">
+          <span>Статус автопилота: <b id="autoStatusText" style="color: #94a3b8;">Не активен</b></span>
+        </div>
+      </div>
+
+      <!-- Панель управления автопилотом (отображается при включенном автопилоте) -->
+      <div id="autopilotPanel" class="autopilot-box" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; color: #f97316;">🚀 Фоновый автопилот отправки (Headless Auto-sender)</h3>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+              Автоматически переходит по /stay-request, заполняет даты, вводит персонализированный текст и отправляет запрос с антифрод-паузами.
+            </div>
+          </div>
+          <div id="countdownBox" style="display: none; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: var(--text-muted);">Следующая отправка через:</span>
+            <span id="countdownTimer" class="countdown-glow">00:00</span>
+          </div>
+        </div>
+
+        <!-- Настройки автопилота -->
+        <div style="display: grid; grid-template-columns: 180px 180px 200px 1fr auto; gap: 14px; align-items: end; background: #0b0f19; padding: 14px; border-radius: 8px; border: 1px solid var(--card-border); margin-bottom: 14px;">
+          <div>
+            <label>Суточный лимит (макс. 15)</label>
+            <input type="number" id="autoDailyLimit" value="12" min="1" max="15">
+          </div>
+          <div>
+            <label>Пауза между отправками</label>
+            <select id="autoDelaySelect">
+              <option value="15-35" selected>15 – 35 минут (Безопасно)</option>
+              <option value="10-20">10 – 20 минут</option>
+              <option value="20-40">20 – 40 минут</option>
+            </select>
+          </div>
+          <div>
+            <label class="checkbox-group" style="margin-top: 20px;">
+              <input type="checkbox" id="autoDryRun">
+              <span>Dry-Run (Симуляция без клика Send)</span>
+            </label>
+          </div>
+          <div>
+            <label class="checkbox-group" style="margin-top: 20px;">
+              <input type="checkbox" id="autoTestMode">
+              <span>Test Mode (Пауза 6-12 сек)</span>
+            </label>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="startAutoBtn" class="btn btn-primary" onclick="startAutopilot()" style="margin-top: 0; padding: 10px 16px;">
+              🚀 Запустить автопилот
+            </button>
+            <button type="button" id="stopAutoBtn" class="btn btn-danger" onclick="stopAutopilot()" style="margin-top: 0; padding: 10px 16px; display: none;">
+              ⏹ Остановить автопилот
+            </button>
+          </div>
+        </div>
+
+        <!-- Прогресс-бар суточного лимита -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;">
+            <span>Прогресс суточного лимита: <b id="progressSentText" style="color: #38bdf8;">0 / 12</b></span>
+            <span id="autoLastHost" style="color: var(--text-muted);">Текущий статус: Готов к запуску</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- А. Панель параметров запроса сверху -->
+      <div class="generator-header">
+        <div class="generator-grid">
+          <div>
+            <label>Check-in Date</label>
+            <input type="date" id="reqCheckIn" value="2026-11-11">
+          </div>
+          <div>
+            <label>Check-out Date</label>
+            <input type="date" id="reqCheckOut" value="2026-11-14">
+          </div>
+          <div>
+            <label>Travelers</label>
+            <input type="text" id="reqTravelers" value="1 traveler" disabled style="background:#090d16; color:#94a3b8; cursor:not-allowed;">
+          </div>
+          <div>
+            <label>Контекст гостя (Профиль Андрея: лыжный инструктор Club Med Tomamu, 10+ лет CS)</label>
+            <textarea id="reqGuestContext" rows="2" style="font-size:12px;">Andrey, professional ski instructor heading to Club Med Tomamu (Hokkaido) for the winter season. 10+ years on Couchsurfing, tidy, independent, loves mountains, sports, authentic local food and respectful cultural exchange. Spends daytime out exploring the city.</textarea>
+          </div>
+          <div>
+            <button type="button" class="btn btn-primary" onclick="regenerateAllQueue()" style="margin-top:0; padding:10px 16px;">
+              ⚡ Перегенерировать все
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-bar">
+          <span style="color:var(--text-muted); font-size:12px;">Очередь:</span>
+          <span class="stat-chip">Всего: <b id="statTotal">0</b></span>
+          <span class="stat-chip approved">Одобрено: <b id="statApproved">0</b></span>
+          <span class="stat-chip draft">Черновиков: <b id="statDraft">0</b></span>
+          <span class="stat-chip sent">Отправлено: <b id="statSent">0</b></span>
+          <span class="stat-chip skipped">Пропущено: <b id="statSkipped">0</b></span>
+          <span class="stat-chip" style="border-color: rgba(236, 72, 153, 0.4); color: #f472b6;">С Instagram: <b id="statInsta">0</b></span>
+
+          <div style="margin-left: auto; display: flex; gap: 8px;">
+            <a href="/api/requests/export" target="_blank" class="btn-sm">💾 requests_queue.json</a>
+            <button class="btn-sm" onclick="loadRequestsQueue()">🔄 Обновить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Фильтры по статусам -->
+      <div class="filter-tabs-row">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn-sm active" id="fBtnAll" onclick="setQueueFilter('all')">Все карточки</button>
+          <button class="btn-sm" id="fBtnApproved" onclick="setQueueFilter('Approved')">✅ Одобрено (Approved)</button>
+          <button class="btn-sm" id="fBtnDraft" onclick="setQueueFilter('Draft')">Черновики (Draft)</button>
+          <button class="btn-sm" id="fBtnSent" onclick="setQueueFilter('Sent')">🚀 Отправлено (Sent)</button>
+          <button class="btn-sm" id="fBtnSkipped" onclick="setQueueFilter('Skipped')">❌ Пропущено (Skipped)</button>
+          <button class="btn-sm" id="fBtnInsta" onclick="setQueueFilter('insta')">Только с Instagram 📸</button>
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted);">
+          Правки текста и статусы сохраняются автоматически в output/requests_queue.json
+        </div>
+      </div>
+
+      <!-- Список интерактивных карточек -->
+      <div id="cardsList" class="cards-list">
+        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Загрузка карточек запросов...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isCuratedTable = true;
+    let isAutopilotMode = false;
+    let queueItems = [];
+    let currentQueueFilter = 'all';
+    let countdownInterval = null;
+
+    // Переключение главных вкладок
+    function switchMainTab(tabIndex) {
+      document.getElementById('tabBtn1').className = tabIndex === 1 ? 'nav-tab active' : 'nav-tab';
+      document.getElementById('tabBtn2').className = tabIndex === 2 ? 'nav-tab active' : 'nav-tab';
+
+      document.getElementById('tab1Content').className = tabIndex === 1 ? 'tab-content active' : 'tab-content';
+      document.getElementById('tab2Content').className = tabIndex === 2 ? 'tab-content active' : 'tab-content';
+
+      if (tabIndex === 2) {
+        loadRequestsQueue();
+        checkAutopilotStatus();
+      } else {
+        fetchTableResults();
+      }
+    }
+
+    // Переключение режима ручной / автопилот
+    function switchAutopilotMode(auto) {
+      isAutopilotMode = auto;
+      document.getElementById('modeManualBtn').className = !auto ? 'btn-sm active' : 'btn-sm';
+      document.getElementById('modeAutoBtn').className = auto ? 'btn-sm active' : 'btn-sm';
+      document.getElementById('autopilotPanel').style.display = auto ? 'block' : 'none';
+      if (auto) checkAutopilotStatus();
+    }
+
+    // =========================================================================
+    // Вкладка 1: Функции базы хостов и управления парсером
+    // =========================================================================
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        if (data.is_running) {
+          startBtn.style.display = 'none';
+          stopBtn.style.display = 'flex';
+        } else {
+          startBtn.style.display = 'flex';
+          stopBtn.style.display = 'none';
+        }
+
+        if (data.logs && data.logs.length > 0) {
+          const consoleElem = document.getElementById('logsConsole');
+          consoleElem.innerText = data.logs.join('\n');
+          consoleElem.scrollTop = consoleElem.scrollHeight;
+        }
+
+        if (data.total_hosts !== undefined) document.getElementById('rawCount').innerText = data.total_hosts;
+        if (data.curated_hosts !== undefined) {
+          document.getElementById('curatedCount').innerText = data.curated_hosts;
+          document.getElementById('tabCount1').innerText = data.curated_hosts;
+          document.getElementById('tabCount2').innerText = data.curated_hosts;
+        }
+      } catch (e) {
+        console.error('Ошибка статуса', e);
+      }
+    }
+
+    function switchTableView(curated) {
+      isCuratedTable = curated;
+      document.getElementById('viewCuratedBtn').className = curated ? 'btn-sm active' : 'btn-sm';
+      document.getElementById('viewRawBtn').className = !curated ? 'btn-sm active' : 'btn-sm';
+
+      document.getElementById('downloadCsv').href = `/api/download/csv?curated=${curated}`;
+      document.getElementById('downloadJson').href = `/api/download/json?curated=${curated}`;
+      fetchTableResults();
+    }
+
+    async function fetchTableResults() {
+      try {
+        const res = await fetch(`/api/results?curated=${isCuratedTable}`);
+        const hosts = await res.json();
+        const tbody = document.getElementById('hostsTableBody');
+        tbody.innerHTML = '';
+
+        if (!hosts || hosts.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">Нет данных базы</td></tr>`;
+          return;
+        }
+
+        hosts.forEach(h => {
+          const tr = document.createElement('tr');
+          const genderBadge = `<span class="badge-gender ${(h.estimated_gender || h.gender || '').toLowerCase()}">${h.estimated_gender || h.gender || '—'}</span>`;
+          const sleepingBadge = `<span class="badge-sleeping">${h.sleeping_arrangement || 'Not specified'}</span>`;
+          const rate = h.response_rate_pct ? `${h.response_rate_pct}%` : '—';
+          const stayReqUrl = h.stay_request_url || `https://www.couchsurfing.com/c/users/${h.username}/stay-request`;
+
+          let instaCell = `<span style="color:var(--text-muted);">—</span>`;
+          if (h.instagram_handle) {
+            instaCell = `<a href="${h.instagram_url || ('https://www.instagram.com/' + h.instagram_handle + '/')}" target="_blank" class="badge-insta">📸 @${h.instagram_handle}</a>`;
+          }
+
+          tr.innerHTML = `
+            <td>
+              <a href="${h.profile_url}" target="_blank" class="profile-link">${h.clean_name || h.name}</a>
+              <div style="font-size: 11px; color: var(--text-muted);">@${h.username} ${genderBadge}</div>
+            </td>
+            <td>${h.location || 'Tokyo'}</td>
+            <td>${sleepingBadge}</td>
+            <td>⭐ ${h.references_count || 0} (${rate})</td>
+            <td>
+              <a href="${stayReqUrl}" target="_blank" class="profile-link" style="color:var(--accent-orange); font-weight:700;">
+                ✈️ Запрос ↗
+              </a>
+            </td>
+            <td>${instaCell}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error('Ошибка загрузки таблицы', e);
+      }
+    }
+
+    async function startScraping() {
+      const payload = {
+        city: document.getElementById('city').value,
+        gender: document.getElementById('gender').value,
+        status: "Accepting Guests",
+        pages: parseInt(document.getElementById('pages').value) || 10,
+        headless: document.getElementById('headless').checked
+      };
+
+      try {
+        const res = await fetch('/api/start_scraper', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.error) alert('Ошибка: ' + data.error);
+      } catch (e) {
+        alert('Ошибка запуска: ' + e);
+      }
+    }
+
+    async function startFiltering() {
+      const payload = {
+        gender: document.getElementById('filterGender').value,
+        allow_couples: document.getElementById('allowCouples').checked,
+        enrich_home: false
+      };
+
+      try {
+        const res = await fetch('/api/start_filter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.error) alert('Ошибка: ' + data.error);
+      } catch (e) {
+        alert('Ошибка фильтрации: ' + e);
+      }
+    }
+
+    async function stopProcess() {
+      if (confirm('Прервать текущий процесс?')) {
+        await fetch('/api/stop', { method: 'POST' });
+      }
+    }
+
+    function toggleCookieBox() {
+      const box = document.getElementById('cookieBox');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function saveDirectCookie() {
+      const val = document.getElementById('rawCookieInput').value.trim();
+      if (!val) return alert('Введите cookie!');
+      const res = await fetch('/api/set_cookie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cookie: val })
+      });
+      const data = await res.json();
+      if (data.status === 'ok') {
+        alert('Сессия сохранена!');
+        document.getElementById('cookieBox').style.display = 'none';
+      }
+    }
+
+    async function startAuthConsole() {
+      const res = await fetch('/api/start_auth_console', { method: 'POST' });
+      const data = await res.json();
+      if (data.status === 'launched') alert('Открыто отдельное окно входа.');
+    }
+
+    // =========================================================================
+    // Вкладка 2: Очередь запросов и Карточки
+    // =========================================================================
+    async function loadRequestsQueue() {
+      try {
+        const res = await fetch('/api/requests/queue');
+        const data = await res.json();
+        queueItems = data.queue || [];
+
+        const sentCount = queueItems.filter(x => (x.status || '').startsWith('Sent')).length;
+
+        if (data.stats) {
+          document.getElementById('statTotal').innerText = data.stats.total || queueItems.length;
+          document.getElementById('statApproved').innerText = data.stats.approved || 0;
+          document.getElementById('statDraft').innerText = data.stats.draft || 0;
+          document.getElementById('statSent').innerText = sentCount;
+          document.getElementById('statSkipped').innerText = data.stats.skipped || 0;
+          document.getElementById('statInsta').innerText = data.stats.with_instagram || 0;
+        }
+
+        renderCards();
+      } catch (e) {
+        console.error('Ошибка очереди запросов', e);
+      }
+    }
+
+    function setQueueFilter(filter) {
+      currentQueueFilter = filter;
+      const btns = ['fBtnAll', 'fBtnDraft', 'fBtnApproved', 'fBtnSent', 'fBtnSkipped', 'fBtnInsta'];
+      btns.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.className = 'btn-sm';
+      });
+
+      if (filter === 'all') document.getElementById('fBtnAll').className = 'btn-sm active';
+      if (filter === 'Draft') document.getElementById('fBtnDraft').className = 'btn-sm active';
+      if (filter === 'Approved') document.getElementById('fBtnApproved').className = 'btn-sm active';
+      if (filter === 'Sent') document.getElementById('fBtnSent').className = 'btn-sm active';
+      if (filter === 'Skipped') document.getElementById('fBtnSkipped').className = 'btn-sm active';
+      if (filter === 'insta') document.getElementById('fBtnInsta').className = 'btn-sm active';
+
+      renderCards();
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cardsList');
+      container.innerHTML = '';
+
+      const filtered = queueItems.filter(item => {
+        if (currentQueueFilter === 'all') return true;
+        if (currentQueueFilter === 'insta') return Boolean(item.instagram_handle);
+        if (currentQueueFilter === 'Sent') return (item.status || '').startsWith('Sent');
+        return item.status === currentQueueFilter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background:#151d30; border-radius:12px;">Нет карточек с выбранным статусом</div>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        const isSent = (item.status || '').startsWith('Sent');
+        const statusClass = item.status === 'Approved' ? 'status-approved' : (item.status === 'Skipped' ? 'status-skipped' : (isSent ? 'status-sent' : 'status-draft'));
+        card.className = `host-card ${statusClass}`;
+        card.id = `card_${item.username}`;
+
+        // Плашка Instagram
+        let instaAlertHtml = '';
+        if (item.instagram_handle) {
+          const instaUrl = item.instagram_url || `https://www.instagram.com/${item.instagram_handle}/`;
+          instaAlertHtml = `
+            <div class="insta-alert">
+              <span>📸 <b>Есть Instagram: @${item.instagram_handle}</b> — можно написать напрямую</span>
+              <a href="${instaUrl}" target="_blank">Открыть профиль Instagram ↗</a>
+            </div>
+          `;
+        }
+
+        // Бейдж секретного слова
+        let secretBadge = '';
+        if (item.secret_code_detected && item.secret_code_hint) {
+          secretBadge = `<span class="badge-secret">🔑 Кодовое слово: '${item.secret_code_hint}'</span>`;
+        }
+
+        const stayReqUrl = item.stay_request_url || `https://www.couchsurfing.com/c/users/${item.username}/stay-request`;
+        const sleepingBadge = `<span class="badge-sleeping">🛏️ ${item.sleeping_arrangement || 'Not specified'}</span>`;
+        const genderBadge = `<span class="badge-gender ${(item.estimated_gender || '').toLowerCase()}">${item.estimated_gender || 'Host'} (${item.host_type || 'solo'})</span>`;
+
+        card.innerHTML = `
+          <div class="host-card-top">
+            <div>
+              <div class="host-info">
+                <span class="host-name">${item.clean_name || item.name}</span>
+                <span style="color:var(--text-muted); font-size:13px;">@${item.username}</span>
+                ${genderBadge}
+                ${sleepingBadge}
+                ${secretBadge}
+                ${isSent ? `<span class="badge-gender" style="background:#7c3aed; color:#fff; font-weight:700;">🚀 ${item.status}</span>` : ''}
+              </div>
+              <div class="host-meta" style="margin-top: 6px;">
+                <span>📍 ${item.location || 'Tokyo'}</span>
+                <span>•</span>
+                <span>⭐ ${item.references_count || 0} отзывов</span>
+                <span>•</span>
+                <span>Отклик: ${item.response_rate_pct || 90}%</span>
+                <span>•</span>
+                <span>Правила: <i>${item.house_rules || 'Standard rules'}</i></span>
+              </div>
+            </div>
+
+            <!-- Статус карточки -->
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="status-btn ${item.status === 'Draft' ? 'active-draft' : ''}" onclick="updateCardStatus('${item.username}', 'Draft')">
+                Draft
+              </button>
+              <button class="status-btn ${item.status === 'Approved' ? 'active-approved' : ''}" onclick="updateCardStatus('${item.username}', 'Approved')">
+                ✅ Approved
+              </button>
+              <button class="status-btn ${isSent ? 'active-sent' : ''}" onclick="updateCardStatus('${item.username}', 'Sent')">
+                🚀 Sent
+              </button>
+              <button class="status-btn ${item.status === 'Skipped' ? 'active-skipped' : ''}" onclick="updateCardStatus('${item.username}', 'Skipped')">
+                ❌ Skipped
+              </button>
+            </div>
+          </div>
+
+          ${instaAlertHtml}
+
+          <!-- Поле редактируемого сообщения -->
+          <textarea id="msg_${item.username}" class="message-textarea" oninput="autoSaveMessage('${item.username}')" placeholder="Текст запроса...">${item.generated_message || ''}</textarea>
+
+          <!-- Нижняя панель действий -->
+          <div class="host-card-actions">
+            <div class="action-group-left">
+              <button class="btn-copy" onclick="copyCardMessage('${item.username}', this)">
+                📋 Copy to Clipboard
+              </button>
+              <a href="${stayReqUrl}" target="_blank" class="btn-stay-request">
+                ✈️ Открыть диалог запроса (/stay-request) ↗
+              </a>
+              <a href="${item.profile_url}" target="_blank" class="btn-sm" style="color:var(--text-muted);">
+                Профиль CS
+              </a>
+              ${item.instagram_handle ? `<a href="${item.instagram_url || ('https://www.instagram.com/' + item.instagram_handle + '/')}" target="_blank" class="btn-sm" style="color:#f472b6;">📸 Instagram</a>` : ''}
+            </div>
+
+            <div class="action-group-right">
+              <button class="btn-sm" onclick="regenerateCard('${item.username}')">
+                🔄 Regenerate
+              </button>
+              <span id="saveBadge_${item.username}" style="font-size:11px; color:#10b981; display:none;">Сохранено!</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const debounceTimers = {};
+    function autoSaveMessage(username) {
+      clearTimeout(debounceTimers[username]);
+      debounceTimers[username] = setTimeout(async () => {
+        const text = document.getElementById(`msg_${username}`).value;
+        const item = queueItems.find(x => x.username === username);
+        if (item) item.generated_message = text;
+
+        try {
+          await fetch('/api/requests/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, message: text })
+          });
+          showSaveIndicator(username);
+        } catch (e) {
+          console.error('Ошибка сохранения', e);
+        }
+      }, 500);
+    }
+
+    function showSaveIndicator(username) {
+      const badge = document.getElementById(`saveBadge_${username}`);
+      if (badge) {
+        badge.style.display = 'inline';
+        setTimeout(() => { badge.style.display = 'none'; }, 2000);
+      }
+    }
+
+    async function updateCardStatus(username, newStatus) {
+      const item = queueItems.find(x => x.username === username);
+      if (item) item.status = newStatus;
+
+      try {
+        const res = await fetch('/api/requests/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username, status: newStatus })
+        });
+        const data = await res.json();
+        if (data.stats) {
+          document.getElementById('statApproved').innerText = data.stats.approved;
+          document.getElementById('statDraft').innerText = data.stats.draft;
+          document.getElementById('statSkipped').innerText = data.stats.skipped;
+        }
+        renderCards();
+      } catch (e) {
+        console.error('Ошибка статуса', e);
+      }
+    }
+
+    async function regenerateCard(username) {
+      const checkIn = document.getElementById('reqCheckIn').value;
+      const checkOut = document.getElementById('reqCheckOut').value;
+      const guestContext = document.getElementById('reqGuestContext').value;
+
+      try {
+        const res = await fetch('/api/requests/regenerate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username,
+            check_in: checkIn,
+            check_out: checkOut,
+            guest_context: guestContext
+          })
+        });
+        const data = await res.json();
+        if (data.item) {
+          const idx = queueItems.findIndex(x => x.username === username);
+          if (idx !== -1) queueItems[idx] = data.item;
+          renderCards();
+          showSaveIndicator(username);
+        }
+      } catch (e) {
+        alert('Ошибка перегенерации: ' + e);
+      }
+    }
+
+    async function regenerateAllQueue() {
+      if (!confirm('Перегенерировать сообщения для всех хостов с текущими датами (2026-11-11 – 2026-11-14)? (Одобренные и отправленные карточки останутся без изменений)')) {
+        return;
+      }
+      const checkIn = document.getElementById('reqCheckIn').value;
+      const checkOut = document.getElementById('reqCheckOut').value;
+      const guestContext = document.getElementById('reqGuestContext').value;
+
+      try {
+        const res = await fetch('/api/requests/regenerate_all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            check_in: checkIn,
+            check_out: checkOut,
+            guest_context: guestContext,
+            overwrite_approved: false
+          })
+        });
+        const data = await res.json();
+        alert(`Успешно перегенерировано: ${data.total}`);
+        loadRequestsQueue();
+      } catch (e) {
+        alert('Ошибка массовой генерации: ' + e);
+      }
+    }
+
+    function copyCardMessage(username, btn) {
+      const textarea = document.getElementById(`msg_${username}`);
+      if (!textarea) return;
+
+      textarea.select();
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        const origText = btn.innerHTML;
+        btn.innerHTML = '✅ Copied!';
+        btn.style.borderColor = '#10b981';
+        btn.style.color = '#34d399';
+        setTimeout(() => {
+          btn.innerHTML = origText;
+          btn.style.borderColor = '';
+          btn.style.color = '';
+        }, 1800);
+      }).catch(err => {
+        alert('Не удалось скопировать: ' + err);
+      });
+    }
+
+    // =========================================================================
+    // Вкладка 2 / Шаг 3: Функции управления Автопилотом
+    // =========================================================================
+    async function checkAutopilotStatus() {
+      try {
+        const res = await fetch('/api/autopilot/status');
+        const data = await res.json();
+
+        const badge = document.getElementById('autopilotBadge');
+        const statusText = document.getElementById('autoStatusText');
+        const startAutoBtn = document.getElementById('startAutoBtn');
+        const stopAutoBtn = document.getElementById('stopAutoBtn');
+        const countdownBox = document.getElementById('countdownBox');
+
+        // Прогресс
+        const sent = data.sent_today || 0;
+        const limit = data.daily_limit || 12;
+        document.getElementById('progressSentText').innerText = `${sent} / ${limit}`;
+        const pct = Math.min(100, Math.round((sent / limit) * 100));
+        document.getElementById('progressBarFill').style.width = pct + '%';
+        document.getElementById('autoLastHost').innerText = data.last_status || 'Готов';
+
+        if (data.is_running) {
+          badge.style.borderColor = '#10b981';
+          statusText.style.color = '#34d399';
+          statusText.innerText = 'Активен (выполняется)';
+          startAutoBtn.style.display = 'none';
+          stopAutoBtn.style.display = 'inline-flex';
+
+          if (data.seconds_remaining && data.seconds_remaining > 0) {
+            countdownBox.style.display = 'flex';
+            startCountdownTimer(data.seconds_remaining);
+          } else {
+            countdownBox.style.display = 'none';
+          }
+        } else {
+          badge.style.borderColor = '#334155';
+          statusText.style.color = '#94a3b8';
+          statusText.innerText = 'Не активен';
+          startAutoBtn.style.display = 'inline-flex';
+          stopAutoBtn.style.display = 'none';
+          countdownBox.style.display = 'none';
+          clearInterval(countdownInterval);
+        }
+      } catch (e) {
+        console.error('Ошибка проверки автопилота', e);
+      }
+    }
+
+    function startCountdownTimer(seconds) {
+      clearInterval(countdownInterval);
+      let rem = seconds;
+      const timerEl = document.getElementById('countdownTimer');
+
+      function update() {
+        if (rem <= 0) {
+          timerEl.innerText = '00:00';
+          clearInterval(countdownInterval);
+          checkAutopilotStatus();
+          return;
+        }
+        const m = Math.floor(rem / 60);
+        const s = rem % 60;
+        timerEl.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        rem--;
+      }
+
+      update();
+      countdownInterval = setInterval(update, 1000);
+    }
+
+    async function startAutopilot() {
+      const limit = parseInt(document.getElementById('autoDailyLimit').value) || 12;
+      const delayVal = document.getElementById('autoDelaySelect').value.split('-');
+      const dryRun = document.getElementById('autoDryRun').checked;
+      const testMode = document.getElementById('autoTestMode').checked;
+
+      const payload = {
+        daily_limit: limit,
+        delay_min: parseInt(delayVal[0]) || 15,
+        delay_max: parseInt(delayVal[1]) || 35,
+        dry_run: dryRun,
+        test_mode: testMode
+      };
+
+      try {
+        const res = await fetch('/api/autopilot/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert('Ошибка: ' + data.error);
+        } else {
+          alert('🚀 Фоновый автопилот запущен!');
+          checkAutopilotStatus();
+        }
+      } catch (e) {
+        alert('Ошибка запуска автопилота: ' + e);
+      }
+    }
+
+    async function stopAutopilot() {
+      if (confirm('Остановить работу автопилота?')) {
+        await fetch('/api/autopilot/stop', { method: 'POST' });
+        checkAutopilotStatus();
+      }
+    }
+
+    // Инициализация при открытии страницы
+    setInterval(() => {
+      checkStatus();
+      if (isAutopilotMode) checkAutopilotStatus();
+    }, 2000);
+
+    fetchTableResults();
+    checkStatus();
+  </script>
+</body>
+</html>

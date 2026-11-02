@@ -1,0 +1,11 @@
+{
+  "is_running": false,
+  "current_host": null,
+  "sent_today": 1,
+  "daily_limit": 12,
+  "next_send_time": null,
+  "seconds_remaining": 0,
+  "last_status": "Завершено. Отправлено сегодня: 1/12",
+  "dry_run": true,
+  "updated_at": "2026-11-02T23:39:13.138007"
+}

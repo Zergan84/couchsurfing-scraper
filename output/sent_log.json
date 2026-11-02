@@ -1,0 +1,18 @@
+[
+  {
+    "id": "kojiarie",
+    "username": "kojiarie",
+    "timestamp": "2026-11-02T23:37:36.710544",
+    "status": "security_abort",
+    "error": "Captcha / Cloudflare / 429 detected"
+  },
+  {
+    "id": "kojiarie",
+    "username": "kojiarie",
+    "name": "Koji A.",
+    "timestamp": "2026-11-02T23:39:13.033549",
+    "status": "dry_run_success",
+    "mode": "dry_run",
+    "notes": "Form filled and verified. Send button was not clicked."
+  }
+]
